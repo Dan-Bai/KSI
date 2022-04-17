@@ -1,10 +1,10 @@
-import codecs
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
+print("Reading wiki knowledge ---")
 
 wikivocab={}
-file1=codecs.open("wikipedia_knowledge",'r','utf-8')
+file1=open("wikipedia_knowledge",'r',encoding='utf-8')
 line=file1.readline()
 while line:
     if line[0:3]!='XXX':
@@ -14,11 +14,10 @@ while line:
             wikivocab[i.lower()]=1
     line=file1.readline()
 
-
-
+print("Reading combined dataset ---")
 
 notesvocab={}
-filec=codecs.open("combined_dataset",'r','utf-8')
+filec=open("combined_dataset",'r',encoding='utf-8')
 
 line=filec.readline()
 
@@ -42,19 +41,17 @@ while line:
                     notesvocab[word]=1
                 
                 line=filec.readline()
-                
             
     line=filec.readline()
-
-
 
 a1=set(notesvocab)
 a2=set(wikivocab)
 a3=a1.intersection(a2)
 
+print("Checkpoint 1 ---")
 
 wikidocuments=[]
-file2=codecs.open("wikipedia_knowledge",'r','utf-8')
+file2=open("wikipedia_knowledge",'r',encoding='utf-8')
 line=file2.readline()
 while line:
     if line[0:4]=='XXXd':
@@ -71,9 +68,10 @@ while line:
         
     line=file2.readline()
 
+print("Checkpoint 2 ---")
 
 notesdocuments=[]
-file3=codecs.open("combined_dataset",'r','utf-8')
+file3=open("combined_dataset",'r',encoding='utf-8')
 
 line=file3.readline()
 
@@ -102,6 +100,8 @@ while line:
             notesdocuments.append(tempf)
     line=file3.readline()
 
+print("Checkpoint 3 ---")
+
 ####################################################################################
 
 notesvocab={}
@@ -124,6 +124,8 @@ for i in wikidocuments:
         temp=temp+j+" "
     wikidata.append(temp)    
 ##########################################################
+
+print("Checkpoint 4 ---")
 
 vect = CountVectorizer(min_df=1,vocabulary=notesvocab,binary=True)
 binaryn = vect.fit_transform(notedata)

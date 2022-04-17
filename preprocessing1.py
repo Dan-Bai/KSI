@@ -1,4 +1,3 @@
-import codecs
 from collections import defaultdict
 import csv
 import string
@@ -11,6 +10,7 @@ stop_words = get_stop_words('english')
 admidic=defaultdict(list)
 count=0
 
+print("Reading NOTEEVENTS ---")
 
 with open('NOTEEVENTS.csv', 'r') as csvfile:
      spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -19,7 +19,7 @@ with open('NOTEEVENTS.csv', 'r') as csvfile:
              admidic[row[2]].append(row[-1].replace('\n',' ').translate(str.maketrans('','',string.punctuation)).lower())
              count=count+1
 
-
+print("Counting word occurrences ---")
 
 u=defaultdict(int)
 for i in admidic:
@@ -28,7 +28,7 @@ for i in admidic:
         for j in line:
             u[j]=u[j]+1
 
-
+print("Filtering word to non-digit, more than 10 occurrence, not stop words ---")
 
 u2=defaultdict(int)
 for i in u:
@@ -39,10 +39,12 @@ for i in u:
                     
 u=[]   
 
-file1=codecs.open('DIAGNOSES_ICD.csv','r')
+file1=open('DIAGNOSES_ICD.csv','r')
 ad2c=defaultdict(list)
 line=file1.readline()
 line=file1.readline()
+
+print("Reading DIAGNOSES ICD ---")
 
 while line:
     line=line.strip().split(',')
@@ -52,21 +54,20 @@ while line:
     
     line=file1.readline()
 
-
-
+print("Counting medical code occurrences ---")
 
 codeu=defaultdict(int)
 for i in ad2c:
     for j in ad2c[i]:
         codeu[j]=codeu[j]+1
 
-
+print("Generating combined dataset from codes and notes ---")
 
 cthre=0
-fileo=codecs.open("combined_dataset",'w')
+fileo=open("combined_dataset",'w', newline="\n")
 
 IDlist=np.load('IDlist.npy',encoding='bytes').astype(str)
-for i in IDlist:
+for i in IDlist[:1000]:
     if ad2c[i]!=[]:
         
         fileo.write('start! '+i+'\n')

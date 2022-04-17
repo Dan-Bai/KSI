@@ -1,14 +1,14 @@
 import numpy as np
 from collections import defaultdict
 from sklearn.model_selection import train_test_split
-import codecs
 
+print("Starting preprocess ---")
 
 ##########################################################
 wikivoc={}
 codewiki=defaultdict(list)
 
-file2=codecs.open("wikipedia_knowledge",'r','utf-8')
+file2=open("wikipedia_knowledge",'r',encoding='utf-8')
 line=file2.readline()
 count=0
 while line:
@@ -30,7 +30,9 @@ codewiki['d_386']=[219]
 
 np.save('wikivoc',wikivoc)
 ##################################################
-filec=codecs.open("combined_dataset",'r','utf-8')
+print("Checkpoint 1 ---")
+
+filec=open("combined_dataset",'r',encoding='utf-8')
 
 line=filec.readline()
 
@@ -67,11 +69,12 @@ for i in label:
             prevoc[j]=len(prevoc)
 
 ##################################
+print("Checkpoint 2 ---")
+
 notevec=np.load('notevec.npy')
 wikivec=np.load('wikivec.npy')
 label_to_ix = {}
 ix_to_label={}
-
 
 for codes in label:
     for code in codes:
@@ -90,12 +93,13 @@ for i in range(0,len(ix_to_label)):
 wikivec=np.array(tempwikivec)
 
 ####################################
+print("Checkpoint 3 ---")
 
 data=[]
 for i in range(0,len(feature)):
     data.append((feature[i], notevec[i], label[i]))
     
-data=np.array(data)  
+data=np.array(data, dtype=object)  
 
 label_to_ix = {}
 ix_to_label={}
@@ -137,4 +141,3 @@ for i in range(0,len(ix_to_label)):
     newwikivec.append(wikivec[prevoc[ix_to_label[i]]])
 newwikivec=np.array(newwikivec)
 np.save('newwikivec',newwikivec)
-
