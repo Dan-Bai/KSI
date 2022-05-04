@@ -13,3 +13,15 @@ Before running the program, you need to apply for [MIMIC-III](https://mimic.phys
 Once you get these two files, run preprocessing scripts "preprocessing1.py", "preprocessing2.py", "preprocessing3.py" in order.
 
 After running three preprocessing files, you can run any of four models ("KSI_LSTM.py", "KSI_LSTMatt.py", "KSI_CNN.py", "KSI_CAML.py") to see how much improvement KSI framework brings to the specific model.
+
+## Setup
+
+- sudo apt-get update
+- sudo apt-get python3.7
+- sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
+- sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 2
+- python3 -m pip install pip
+- python3 -m pip install --upgrade pip
+- pip3 install stop_words torch numpy sklearn
+- gzip -dk DIAGNOSES_ICD.csv.gz
+- gzip -dk NOTEEVENTS.csv.gz

@@ -211,7 +211,7 @@ def trainmodel(model, sim):
             bestresults=modelperform[-1]
             bestiter=len(modelperform)-1
         
-        if (len(modelperform)-bestiter)>5:
+        if (len(modelperform)-bestiter)>5 or epoch >= 50:
             print (modelperform,bestiter)
             return modelsaved[bestiter]
     

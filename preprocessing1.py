@@ -67,7 +67,7 @@ cthre=0
 fileo=open("combined_dataset",'w', newline="\n")
 
 IDlist=np.load('IDlist.npy',encoding='bytes').astype(str)
-for i in IDlist[:1000]:
+for i in IDlist[:10000]:
     if ad2c[i]!=[]:
         
         fileo.write('start! '+i+'\n')

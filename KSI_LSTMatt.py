@@ -11,15 +11,15 @@ import copy
 
 ##########################################################
 
-label_to_ix=np.load('label_to_ix.npy').item()
-ix_to_label=np.load('ix_to_label.npy')
-training_data=np.load('training_data.npy')
-test_data=np.load('test_data.npy')
-val_data=np.load('val_data.npy')
-word_to_ix=np.load('word_to_ix.npy').item()
-ix_to_word=np.load('ix_to_word.npy')
-newwikivec=np.load('newwikivec.npy')
-wikivoc=np.load('wikivoc.npy').item()
+label_to_ix=np.load('label_to_ix.npy', allow_pickle=True).item()
+ix_to_label=np.load('ix_to_label.npy', allow_pickle=True)
+training_data=np.load('training_data.npy', allow_pickle=True)
+test_data=np.load('test_data.npy', allow_pickle=True)
+val_data=np.load('val_data.npy', allow_pickle=True)
+word_to_ix=np.load('word_to_ix.npy', allow_pickle=True).item()
+ix_to_word=np.load('ix_to_word.npy', allow_pickle=True)
+newwikivec=np.load('newwikivec.npy', allow_pickle=True)
+wikivoc=np.load('wikivoc.npy', allow_pickle=True).item()
 
 wikisize=newwikivec.shape[0]
 rvocsize=newwikivec.shape[1]
@@ -39,7 +39,7 @@ def preprocessing(data):
                 templabel[label_to_ix[jj]]=1.0
         templabel=np.array(templabel,dtype=float)
         new_data.append((i, note, templabel))
-    new_data=np.array(new_data)
+    new_data=np.array(new_data, dtype=object)
     
     lenlist=[]
     for i in new_data:
@@ -53,7 +53,7 @@ def preprocessing(data):
         thisblock=new_data[start_ix:start_ix+batchsize]
         mybsize= len(thisblock)
         numword=np.max([len(ii[0]) for ii in thisblock])
-        main_matrix = np.zeros((mybsize, numword), dtype= np.int)
+        main_matrix = np.zeros((mybsize, numword), dtype= int)
         for i in range(main_matrix.shape[0]):
             for j in range(main_matrix.shape[1]):
                 try:
@@ -105,8 +105,8 @@ class LSTMattn(nn.Module):
         self.embed_drop = nn.Dropout(p=0.2)
     
     def init_hidden(self):
-        return (autograd.Variable(torch.zeros(1, batchsize, self.hidden_dim).cuda()),
-                autograd.Variable(torch.zeros(1, batchsize, self.hidden_dim)).cuda())
+        return (autograd.Variable(torch.zeros(1, batchsize, self.hidden_dim)),
+                autograd.Variable(torch.zeros(1, batchsize, self.hidden_dim)))
 
     
     def forward(self, vec1, nvec, wiki, simlearning):
@@ -175,8 +175,8 @@ def trainmodel(model, sim):
         for mysentence in batchtraining_data:
             model.zero_grad()
             model.hidden = model.init_hidden()
-            targets = mysentence[2].cuda()
-            tag_scores = model(mysentence[0].cuda(),mysentence[1].cuda(),wikivec.cuda(),sim)
+            targets = mysentence[2]
+            tag_scores = model(mysentence[0],mysentence[1],wikivec,sim)
             loss = loss_function(tag_scores, targets)
             loss.backward()
             optimizer.step()
@@ -189,8 +189,8 @@ def trainmodel(model, sim):
         recall=[]
         for inputs in batchval_data:
             model.hidden = model.init_hidden()
-            targets = inputs[2].cuda()
-            tag_scores = model(inputs[0].cuda(),inputs[1].cuda() ,wikivec.cuda(),sim)
+            targets = inputs[2]
+            tag_scores = model(inputs[0],inputs[1] ,wikivec,sim)
     
             loss = loss_function(tag_scores, targets)
             
@@ -220,12 +220,11 @@ def trainmodel(model, sim):
             bestresults=modelperform[-1]
             bestiter=len(modelperform)-1
         
-        if (len(modelperform)-bestiter)>5:
+        if (len(modelperform)-bestiter)>5 or epoch >= 50:
             print (modelperform,bestiter)
             return modelsaved[bestiter]
     
 model = LSTMattn(batchsize, len(word_to_ix), len(label_to_ix))
-model.cuda()
 loss_function = nn.BCELoss()
 optimizer = optim.Adam(model.parameters())
 
@@ -233,7 +232,6 @@ basemodel= trainmodel(model, 0)
 torch.save(basemodel, 'LSTMattn_model')
 
 model = LSTMattn(batchsize, len(word_to_ix), len(label_to_ix))
-model.cuda()
 model.load_state_dict(basemodel)
 loss_function = nn.BCELoss()
 optimizer = optim.Adam(model.parameters())
@@ -242,7 +240,6 @@ torch.save(KSImodel, 'KSI_LSTMattn_model')
 
 def testmodel(modelstate, sim):
     model = LSTMattn(batchsize, len(word_to_ix), len(label_to_ix))
-    model.cuda()
     model.load_state_dict(modelstate)
     loss_function = nn.BCELoss()
     model.eval()
@@ -255,9 +252,9 @@ def testmodel(modelstate, sim):
     
     for inputs in batchtest_data:
         model.hidden = model.init_hidden()
-        targets = inputs[2].cuda()
+        targets = inputs[2]
         
-        tag_scores = model(inputs[0].cuda(),inputs[1].cuda() ,wikivec.cuda(),sim)
+        tag_scores = model(inputs[0],inputs[1] ,wikivec,sim)
 
         loss = loss_function(tag_scores, targets)
         
@@ -296,7 +293,7 @@ def testmodel(modelstate, sim):
     tempscores=np.array(tempscores)
     y_true=temptrue.T
     y_scores=tempscores.T
-    y_pred=(y_scores>0.5).astype(np.int)
+    y_pred=(y_scores>0.5).astype(int)
     print ('test loss', np.mean(lossestest))
     print ('top-',topk, np.mean(recall))
     print ('macro AUC', roc_auc_score(y_true, y_scores,average='macro'))
